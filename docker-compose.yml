@@ -1,0 +1,129 @@
+version: "3.9"
+services:
+  redpanda:
+    image: docker.vectorized.io/vectorized/redpanda:latest
+    container_name: redpanda
+    command:
+     - redpanda start
+     - --overprovisioned
+     - --smp 1
+     - --memory 1G
+     - --reserve-memory 0M
+     - --node-id 0
+     - --check=false
+     - --kafka-addr 0.0.0.0:9092
+     - --advertise-kafka-addr redpanda:9092
+     - --pandaproxy-addr 0.0.0.0:8082
+     - --advertise-pandaproxy-addr redpanda:8082
+     - --set redpanda.enable_transactions=true
+     - --set redpanda.enable_idempotence=true
+     - --set redpanda.auto_create_topics_enabled=true
+    ports:
+     - 9092:9092
+     - 8081:8081
+     - 8082:8082
+    healthcheck: { test: curl -f localhost:9644/v1/status/ready, interval: 1s, start_period: 30s }
+    networks:
+      - kafka-network
+
+  redpanda-console:
+    image: docker.redpanda.com/vectorized/console:latest
+    container_name: redpanda-console
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+          schemaRegistry:
+            enabled: false
+        redpanda:
+          adminApi:
+            enabled: false
+    ports:
+      - 8080:8080
+    depends_on:
+      - redpanda
+    networks:
+      - kafka-network
+
+  jobmanager:
+    container_name: jobmanager
+    image: flink:1.16.0-scala_2.12-java11
+    ports:
+      - 9081:8081
+      - 9249:9249
+    command: jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+        metrics.reporter.prom.factory.port: 9249
+        metrics.reporters: prom
+    volumes:
+      - settings:/settings
+      - data:/data
+    networks:
+      - kafka-network
+
+  taskmanager-1:
+    container_name: taskmanager-1
+    image: flink:1.16.0-scala_2.12-java11
+    ports:
+      - 9250:9250
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    scale: 1
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 10
+    networks:
+      - kafka-network
+
+  taskmanager-2:
+    container_name: taskmanager-2
+    image: flink:1.16.0-scala_2.12-java11
+    ports:
+      - 9251:9251
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    scale: 1
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 10
+    networks:
+      - kafka-network
+
+  postgres-db:
+    image: 'postgres:latest'
+    container_name: postgres-db
+    restart: always
+    environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+    logging:
+        options:
+            max-size: 10m
+            max-file: "3"
+    ports:
+    - 5438:5432
+    volumes:
+        - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - kafka-network
+
+volumes:
+  settings:
+  data:
+  
+networks:
+  kafka-network:
+    driver: bridge
