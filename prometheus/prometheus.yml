@@ -1,0 +1,19 @@
+---
+global:
+  scrape_interval: 1s
+  evaluation_interval: 1s
+
+rule_files:
+- flink.rules.yml
+
+scrape_configs:
+- job_name: 'flink'
+  metrics_path: '/'
+  static_configs:
+  - targets: ['docker.for.mac.host.internal:9249', 'docker.for.mac.host.internal-1:9250', 'docker.for.mac.host.internal-2:9251']
+
+- job_name: 'redpanda'
+  metrics_path: '/public_metrics'
+  static_configs:
+  - targets: ['docker.for.mac.host.internal:9644']
+
