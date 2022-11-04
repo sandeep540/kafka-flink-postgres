@@ -1,12 +1,12 @@
-import uuid
 import datetime
 import time
+import uuid
+from json import dumps
+
 import schedule
-import random
-from kafka import KafkaProducer
-from json import dumps  
-from kafka.admin import KafkaAdminClient, NewTopic
 from faker import Faker
+from kafka import KafkaProducer
+from kafka.admin import KafkaAdminClient, NewTopic
 
 kafka_nodes=['redpanda:9092']
 myTopic = 'people'
