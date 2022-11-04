@@ -1,31 +1,24 @@
 version: "3.9"
 services:
+
   redpanda:
-    image: docker.vectorized.io/vectorized/redpanda:latest
+    image: docker.redpanda.com/vectorized/redpanda:v22.2.2
     container_name: redpanda
     command:
-     - redpanda start
-     - --overprovisioned
-     - --smp 1
-     - --memory 1G
-     - --reserve-memory 0M
-     - --node-id 0
-     - --check=false
-     - --kafka-addr 0.0.0.0:9092
-     - --advertise-kafka-addr redpanda:9092
-     - --pandaproxy-addr 0.0.0.0:8082
-     - --advertise-pandaproxy-addr redpanda:8082
-     - --set redpanda.enable_transactions=true
-     - --set redpanda.enable_idempotence=true
-     - --set redpanda.auto_create_topics_enabled=true
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 0
+      - --kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr 0.0.0.0:8082
+      - --advertise-pandaproxy-addr localhost:8082
     ports:
-     - 9092:9092
-     - 8081:8081
-     - 8082:8082
-     - 9644:9644
-    healthcheck: { test: curl -f localhost:9644/v1/status/ready, interval: 1s, start_period: 30s }
-    networks:
-      - kafka-network
+      - 8081:8081
+      - 8082:8082
+      - 9092:9092
+      - 9644:9644
+      - 29092:29092
 
   redpanda-console:
     image: docker.redpanda.com/vectorized/console:latest
@@ -36,7 +29,7 @@ services:
       CONFIG_FILEPATH: /tmp/config.yml
       CONSOLE_CONFIG_FILE: |
         kafka:
-          brokers: ["redpanda:9092"]
+          brokers: ["redpanda:29092"]
           schemaRegistry:
             enabled: false
         redpanda:
@@ -46,8 +39,6 @@ services:
       - 8080:8080
     depends_on:
       - redpanda
-    networks:
-      - kafka-network
 
   jobmanager:
     container_name: jobmanager
@@ -66,8 +57,7 @@ services:
     volumes:
       - settings:/settings
       - data:/data
-    networks:
-      - kafka-network
+
 
   taskmanager-1:
     container_name: taskmanager-1
@@ -86,8 +76,7 @@ services:
         metrics.reporter.prom.factory.port: 9249
         metrics.reporters: prom
         taskmanager.numberOfTaskSlots: 10
-    networks:
-      - kafka-network
+
 
   taskmanager-2:
     container_name: taskmanager-2
@@ -106,8 +95,7 @@ services:
         metrics.reporter.prom.factory.port: 9249
         metrics.reporters: prom
         taskmanager.numberOfTaskSlots: 10
-    networks:
-      - kafka-network
+
 
   postgres-db:
     image: postgres:latest
@@ -124,8 +112,7 @@ services:
     - 5438:5432
     volumes:
         - ./postgres-data:/var/lib/postgresql/data
-    networks:
-      - kafka-network
+
 
   prometheus:
     image: prom/prometheus:latest
@@ -134,8 +121,7 @@ services:
     - 9090:9090
     volumes:
     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - kafka-network
+
 
   grafana:
     image: grafana/grafana:latest
@@ -146,13 +132,10 @@ services:
     - GF_SECURITY_ADMIN_PASSWORD=flink
     volumes:
     - ./grafana/provisioning/:/etc/grafana/provisioning/
-    networks:
-      - kafka-network
+
 
 volumes:
   settings:
   data:
   
-networks:
-  kafka-network:
-    driver: bridge
+

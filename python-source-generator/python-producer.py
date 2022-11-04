@@ -8,24 +8,8 @@ from json import dumps
 from kafka.admin import KafkaAdminClient, NewTopic
 from faker import Faker
 
-kafka_nodes=['localhost:9092']
+kafka_nodes=['redpanda:9092']
 myTopic = 'people'
-
-admin_client = KafkaAdminClient(
-    bootstrap_servers=kafka_nodes, 
-    client_id='python-test-01'
-)
-topics = []
-topics = admin_client.list_topics()
-print("List of topics -----> ", topics)
-
-
-if myTopic not in topics:
-    # create topic
-    print("Creating topic as it does not exist")
-    topic_list = []
-    topic_list.append(NewTopic(name=myTopic, num_partitions=1, replication_factor=1))
-    admin_client.create_topics(new_topics=topic_list, validate_only=False)
 
 
 def gen_data():
@@ -40,9 +24,8 @@ def gen_data():
     prod.flush()
 
 if __name__ == "__main__":
-
     gen_data()
-    schedule.every(1).seconds.do(gen_data)
+    schedule.every(3).seconds.do(gen_data)
 
     while True:
         schedule.run_pending()
