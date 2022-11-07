@@ -2,6 +2,11 @@ import java.util.Objects;
 
 public class People {
 
+
+    /*
+    
+     */
+
     public String id;
     public String name;
     public String brand;

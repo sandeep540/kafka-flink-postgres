@@ -7,7 +7,7 @@ import schedule
 from faker import Faker
 from kafka import KafkaProducer
 
-kafka_nodes=['redpanda:9092']
+kafka_nodes=['localhost:9092']
 myTopic = 'people'
 
 
