@@ -28,8 +28,8 @@ public class PeopleDeserializationSchema extends AbstractDeserializationSchema<P
      * extending AbstractDeserializationSchema.
      */
     @Override
-    public Event deserialize(byte[] message) throws IOException {
-        return objectMapper.readValue(message, Event.class);
+    public People deserialize(byte[] message) throws IOException {
+        return objectMapper.readValue(message, People.class);
     }
 
 }

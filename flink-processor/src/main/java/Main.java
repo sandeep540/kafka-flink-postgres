@@ -1,4 +1,3 @@
-import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
 import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
@@ -12,12 +11,10 @@ import org.apache.kafka.common.TopicPartition;
 import java.util.Arrays;
 import java.util.HashSet;
 
-
 public class Main {
 
     static final String TOPIC = "people";
     static final String BROKERS = "localhost:9092";
-    //static final String BROKERS = "redpanda-1:29092,redpanda-2:29093,redpanda-3:29093";
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -30,17 +27,17 @@ public class Main {
         //KafkaSource.builder().setPartitions(partitionSet);
 
         //Define Source
-        KafkaSource<Event> source =
-                KafkaSource.<Event>builder()
+        KafkaSource<People> source =
+                KafkaSource.<People>builder()
                         .setBootstrapServers(BROKERS)
                         .setProperty("partition.discovery.interval.ms", "10000")
                         .setTopics(TOPIC)
                         .setGroupId("groupId-919292")
                         .setStartingOffsets(OffsetsInitializer.earliest())
-                        .setValueOnlyDeserializer(new EventDeserializationSchema())
+                        .setValueOnlyDeserializer(new PeopleDeserializationSchema())
                         .build();
 
-        DataStreamSource<Event> kafka =
+        DataStreamSource<People> kafka =
                 env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka");
 
         //Add Sink

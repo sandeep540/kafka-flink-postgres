@@ -4,15 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
-    <artifactId>flink-kafka2mysql</artifactId>
+    <groupId>org.acme</groupId>
+    <artifactId>flink-kafka2postgres</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.16</flink.version>
+        <flink.version>1.16.0</flink.version>
         <jackson.version>2.13.4</jackson.version>
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <kafka.version>3.2.0</kafka.version>
@@ -93,12 +93,13 @@
         </dependency>
 
 
-        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.0</version>
         </dependency>
+
 
 
         <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-csv -->
