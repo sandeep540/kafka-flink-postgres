@@ -14,7 +14,7 @@ import java.util.HashSet;
 public class Main {
 
     static final String TOPIC = "people";
-    static final String BROKERS = "localhost:9092";
+    static final String BROKERS = "redpanda:29092";
 
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -56,7 +56,7 @@ public class Main {
                         .withMaxRetries(5)
                         .build(),
                 new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
-                        .withUrl("jdbc:postgresql://postgres-db:5438/postgres")
+                        .withUrl("jdbc:postgresql://docker.for.mac.host.internal:5438/postgres")
                         .withDriverName("org.postgresql.Driver")
                         .withUsername("postgres")
                         .withPassword("postgres")
