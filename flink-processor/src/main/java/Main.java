@@ -41,12 +41,14 @@ public class Main {
                 env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka");
 
         //Add Sink
-        kafka.addSink(JdbcSink.sink( "insert into public.people (id, name, brand, date) values (?, ?, ?, ?)",
+        kafka.addSink(JdbcSink.sink( "insert into public.people (id, name, timestamp, country, job, image) values (?, ?, ?, ?, ?, ?)",
                 (statement, event) -> {
                     statement.setString(1, event.id);
                     statement.setString(2, event.name);
-                    statement.setString(3, event.brand);
-                    statement.setString(4, event.date);
+                    statement.setString(3, event.timestamp);
+                    statement.setString(4, event.country);
+                    statement.setString(5, event.job);
+                    statement.setString(6, event.image);
                 },
                 JdbcExecutionOptions.builder()
                         .withBatchSize(1000)
@@ -54,7 +56,7 @@ public class Main {
                         .withMaxRetries(5)
                         .build(),
                 new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
-                        .withUrl("jdbc:postgresql://localhost:5438/postgres")
+                        .withUrl("jdbc:postgresql://postgres-db:5438/postgres")
                         .withDriverName("org.postgresql.Driver")
                         .withUsername("postgres")
                         .withPassword("postgres")

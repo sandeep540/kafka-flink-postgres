@@ -19,6 +19,8 @@ services:
       - 9092:9092
       - 9644:9644
       - 29092:29092
+    networks:
+      - kafka-network
 
   redpanda-console:
     image: docker.redpanda.com/vectorized/console:latest
@@ -39,6 +41,8 @@ services:
       - 8080:8080
     depends_on:
       - redpanda
+    networks:
+      - kafka-network
 
   jobmanager:
     container_name: jobmanager
@@ -57,7 +61,8 @@ services:
     volumes:
       - settings:/settings
       - data:/data
-
+    networks:
+      - kafka-network
 
   taskmanager-1:
     container_name: taskmanager-1
@@ -76,7 +81,8 @@ services:
         metrics.reporter.prom.factory.port: 9249
         metrics.reporters: prom
         taskmanager.numberOfTaskSlots: 10
-
+    networks:
+      - kafka-network
 
   taskmanager-2:
     container_name: taskmanager-2
@@ -95,7 +101,8 @@ services:
         metrics.reporter.prom.factory.port: 9249
         metrics.reporters: prom
         taskmanager.numberOfTaskSlots: 10
-
+    networks:
+      - kafka-network
 
   postgres-db:
     image: postgres:latest
@@ -112,7 +119,8 @@ services:
     - 5438:5432
     volumes:
         - ./postgres-data:/var/lib/postgresql/data
-
+    networks:
+      - kafka-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -121,7 +129,8 @@ services:
     - 9090:9090
     volumes:
     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-
+    networks:
+      - kafka-network
 
   grafana:
     image: grafana/grafana:latest
@@ -132,10 +141,14 @@ services:
     - GF_SECURITY_ADMIN_PASSWORD=flink
     volumes:
     - ./grafana/provisioning/:/etc/grafana/provisioning/
-
+    networks:
+      - kafka-network
 
 volumes:
   settings:
   data:
   
+networks:
+  kafka-network:
+    driver: bridge
 
